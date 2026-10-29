@@ -8,6 +8,7 @@
 <title>Mfumo wa Matokeo ya Shule</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("mfumo_theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<script id="preset" type="application/json">null</script>
 <style>
 /* =========================================================
    Mfumo wa Matokeo ya Shule — Dark Mode (Professional)
@@ -46,6 +47,7 @@ body[data-sec="darasa"]{--acc:#4fb3ff}
 body[data-sec="mitihani"]{--acc:#34d3a0}
 body[data-sec="ripoti"]{--acc:#a78bfa}
 body[data-sec="watumiaji"]{--acc:#fbab4c}
+body[data-sec="shughuli"]{--acc:#f472b6}
 :root[data-theme="light"] body[data-sec="darasa"]{--acc:#1f7fd1}
 :root[data-theme="light"] body[data-sec="mitihani"]{--acc:#12935f}
 :root[data-theme="light"] body[data-sec="ripoti"]{--acc:#7a56d8}
@@ -203,6 +205,13 @@ dialog::backdrop{background:rgba(3,7,18,.65);backdrop-filter:blur(3px)}
 .sign div{border-top:1px solid #000;padding-top:4px;flex:1;text-align:center}
 .up{color:#15803d;font-weight:bold}.dn{color:#b91c1c;font-weight:bold}
 
+/* ---------- Watumiaji / Chapisha ---------- */
+.credbox{background:var(--raised);border:1px dashed var(--acc);border-radius:10px;padding:10px 12px;margin-top:10px;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;font-size:13px}
+.steps{margin:8px 0 8px 18px;padding:0;color:var(--muted);font-size:13px}.steps li{margin:4px 0}
+.chkrow{display:flex;gap:8px;align-items:center;font-size:14px;margin:8px 0}
+.chkrow input{width:16px;height:16px;padding:0}
+.lock{opacity:.7;cursor:not-allowed}
+dialog .fg input,dialog .fg select{width:100%}
 /* ---------- Toast ---------- */
 #toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:100}
 .toast{background:var(--raised2);color:var(--ink);border:1px solid var(--bd);border-left:4px solid var(--ok);padding:11px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:14px;animation:fade .25s both;transition:opacity .3s}
@@ -245,8 +254,8 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
   <h1 id="authTitle">Mfumo wa Matokeo ya Shule</h1>
 
   <div id="au-setup" class="hidden">
-   <h2>Karibu! Sajili Msimamizi wa Kwanza</h2>
-   <p class="hint">Hii ni mara ya kwanza kutumia mfumo. Tengeneza akaunti ya Msimamizi; baadaye utasajili walimu wengine kupitia menyu ya <b>WATUMIAJI</b>.</p>
+   <h2>Karibu! Sajili Mmiliki wa Mfumo</h2>
+   <p class="hint">Hii ni mara ya kwanza kutumia mfumo. Tengeneza akaunti ya <b>Mmiliki</b>; baadaye utasajili Wasimamizi na Walimu kupitia menyu ya <b>WATUMIAJI</b>.</p>
    <form id="setupForm" onsubmit="doSetup(event)">
     <label>Jina kamili<input id="sName" autocomplete="name" required></label>
     <label>Email<input id="sEmail" type="email" autocomplete="email" required></label>
@@ -255,6 +264,11 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
     <div id="setupMsg" class="msg"></div>
     <button class="btn big" type="submit">Tengeneza Akaunti</button>
    </form>
+  </div>
+
+  <div id="au-closed" class="hidden">
+   <h2>Mfumo bado haujaandaliwa</h2>
+   <p class="hint" style="text-align:center">Kiungo hiki hakina akaunti zozote bado. Tafadhali wasiliana na Msimamizi wa shule akupe kiungo sahihi cha kuingia.</p>
   </div>
 
   <div id="au-login" class="hidden">
@@ -280,7 +294,7 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
   <button class="btn gray sm" id="themeBtn" onclick="toggleTheme()" title="Badili mandhari">🌙</button>
   <span class="me">👤 <b id="meName"></b> <em id="meRole"></em></span>
   <button class="btn gray sm" onclick="changeMyPw()">🔑 Nenosiri</button>
-  <button class="btn gray adminOnly" onclick="openSet()">⚙ Mipangilio ya Shule</button>
+  <button class="btn gray" id="setBtn" onclick="openSet()">⚙ Mipangilio ya Shule</button>
   <button class="btn red sm" onclick="logout()">⏻ Toka</button>
  </div>
 </header>
@@ -289,7 +303,8 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
  <button id="nb-darasa" onclick="go('darasa')">🏫 DARASA</button>
  <button id="nb-mitihani" onclick="go('mitihani')">📝 MITIHANI</button>
  <button id="nb-ripoti" onclick="go('ripoti')">📄 RIPOTI</button>
- <button id="nb-watumiaji" class="adminOnly hidden" onclick="go('watumiaji')">👥 WATUMIAJI</button>
+ <button id="nb-watumiaji" class="hidden" onclick="go('watumiaji')">👥 WATUMIAJI</button>
+ <button id="nb-shughuli" class="hidden" onclick="go('shughuli')">📜 SHUGHULI</button>
 </nav>
 <main>
 
@@ -411,31 +426,90 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
  <div id="repArea"></div>
 </section>
 
+<!-- USIMAMIZI (Mmiliki / Msimamizi) -->
+<section id="sec-mgmt" class="sec hidden">
+ <div class="card">
+  <h2 id="mgTitle">Usimamizi wa Mfumo</h2>
+  <div class="stats" id="mgStats"></div>
+  <div class="cta">
+   <button class="btn" onclick="go('watumiaji')">👥 Simamia Watumiaji</button>
+   <button class="btn gray" id="mgLogBtn" onclick="go('shughuli')">📜 Angalia Shughuli Zote</button>
+  </div>
+ </div>
+ <div class="card" id="mgLogCard"><h2>Shughuli za Hivi Karibuni</h2><div id="mgLog" style="overflow-x:auto"></div></div>
+</section>
+
+<!-- SHUGHULI (Mmiliki tu) -->
+<section id="sec-shughuli" class="sec hidden">
+ <div class="card">
+  <h2>Shughuli za Mfumo</h2>
+  <p class="hint">Kumbukumbu ya kuingia, kutoka, usajili, alama, ripoti na usimamizi wa watumiaji. Kumbukumbu hii inahifadhiwa kwenye <b>kivinjari hiki</b> (si seva), kwa hiyo inaonyesha shughuli zilizofanyika kwenye kifaa hiki tu.</p>
+  <div class="row">
+   <select id="lgUser" onchange="renderLog()"></select>
+   <input id="lgQ" placeholder="🔍 Tafuta shughuli..." oninput="renderLog()" style="min-width:200px">
+   <span style="flex:1"></span>
+   <button class="btn blue sm" onclick="exportLog()">⬇ Pakua CSV</button>
+   <button class="btn red sm" onclick="clearLog()">Futa kumbukumbu</button>
+  </div>
+  <div id="lgList" style="overflow-x:auto"></div>
+ </div>
+</section>
+
 <!-- WATUMIAJI -->
 <section id="sec-watumiaji" class="sec hidden">
  <div class="card">
   <h2>Sajili Mtumiaji Mpya</h2>
-  <p class="hint">Mtumiaji ataingia kwenye mfumo kwa email na nenosiri utakalomwekea hapa. <b>Msimamizi</b> anaweza kusimamia watumiaji na mipangilio; <b>Mwalimu</b> anaweza kutumia Darasa, Mitihani na Ripoti.</p>
+  <p class="hint">Mtumiaji ataingia kwa email na nenosiri utakalomwekea hapa. Weka pia <b>jina la shule yake</b> na <b>jina la Mkuu wa Shule</b>; vitaonekana kwenye ripoti zake. <b>Mmiliki</b> anasajili <b>Wasimamizi tu</b>, anaweza kuwazuia au kuwafuta Wasimamizi na Walimu, na anaona shughuli zote. <b>Msimamizi</b> anasajili na kuhariri <b>Walimu</b>, lakini hawezi kusajili wanafunzi wala kuingiza alama. Kila mwalimu ana data yake binafsi (wanafunzi, mitihani, ripoti).</p>
   <form id="userForm" onsubmit="addUser(event)" class="row" autocomplete="off">
-   <input id="uName" placeholder="Jina kamili" style="min-width:200px" required>
+   <input id="uName" placeholder="Jina kamili la mtumiaji" style="min-width:200px" required>
    <input id="uEmail" type="email" placeholder="Email" style="min-width:230px" required>
-   <input id="uPw" type="text" placeholder="Nenosiri (angalau 6)" style="min-width:180px" required>
-   <select id="uRole"><option value="mwalimu">Mwalimu</option><option value="admin">Msimamizi</option></select>
+   <input id="uSchool" placeholder="Jina la Shule yake" style="min-width:220px" required>
+   <input id="uMkuu" placeholder="Jina la Mkuu wa Shule" style="min-width:220px" required>
+   <span class="pw"><input id="uPw" type="text" placeholder="Nenosiri (angalau 8)" style="min-width:170px" required><button type="button" class="btn gray sm" onclick="genPw()" title="Tengeneza nenosiri">🎲</button></span>
+   <select id="uRole" onchange="onRoleChange()"><option value="mwalimu">Mwalimu</option></select>
    <button class="btn" type="submit">+ Sajili Mtumiaji</button>
   </form>
   <div id="uMsg" class="msg"></div>
+  <div id="uCredWrap" class="hidden"><div class="credbox" id="uCred"></div><div class="cta"><button class="btn blue sm" onclick="copyCreds()">📋 Nakili maelezo ya kuingia</button></div></div>
+ </div>
+ <div class="card" id="accCard">
+  <h2>💾 Hifadhi ya Akaunti (Mmiliki)</h2>
+  <p class="hint">Akaunti na kumbukumbu ya shughuli ziko kwenye kivinjari hiki. Pakua nakala mara kwa mara ili usizipoteze (mfano ukifuta data ya kivinjari au ukihamia kompyuta nyingine). Nakala ina nenosiri zilizofichwa (hash), kwa hiyo ihifadhi mahali salama.</p>
+  <div class="cta">
+   <button class="btn blue" onclick="exportAccounts()">⬇ Pakua Nakala ya Akaunti</button>
+   <label class="btn gray" style="display:inline-block;cursor:pointer">⬆ Rudisha Nakala<input type="file" accept=".json" class="hidden" onchange="importAccounts(event)"></label>
+  </div>
+ </div>
+ <div class="card" id="pubCard">
+  <h2>🚀 Chapisha Kiungo cha GitHub (Kuingia Tu)</h2>
+  <p class="hint">Faili hili lina fomu ya kusajili Msimamizi, kwa hiyo <b>usilipakie moja kwa moja</b> kwa watumiaji. Tengeneza toleo la <b>Kuingia Tu</b>: lina akaunti ulizosajili hapa, na halina fomu ya kujisajili wala menyu ya Watumiaji.</p>
+  <p class="hint">Toleo hilo linajumuisha akaunti za <b>Walimu</b> tu (Mmiliki na Wasimamizi hawajumuishwi).</p>
+  <div class="cta"><button class="btn" onclick="buildPublish()">⬇ Pakua index.html (Kuingia Tu)</button></div>
+  <ol class="steps">
+   <li>Hakikisha Wasimamizi wamesajili walimu wote (pamoja na shule na Mkuu wa Shule wa kila mmoja).</li>
+   <li>Bonyeza <b>Pakua index.html</b> hapo juu.</li>
+   <li>Weka faili hilo kwenye repository yako ya GitHub kwa jina <b>index.html</b> (badilisha lililopo), kisha washa <b>Settings → Pages</b>.</li>
+   <li>Shiriki kiungo cha GitHub Pages. Mtumiaji ataona skrini ya <b>Kuingia</b> tu.</li>
+   <li>Ukisajili mwalimu mpya baadaye, pakua toleo jipya na ulipakie tena.</li>
+  </ol>
+  <p class="warn">Tahadhari: mfumo huu hauna seva. Alama na wanafunzi huhifadhiwa kwenye kivinjari cha kila mtumiaji (mhimize apakue nakala mara kwa mara), na nenosiri zilizofichwa (hash) zinaonekana kwenye faili la umma, kwa hiyo tumia nenosiri imara.</p>
  </div>
  <div class="card">
   <h2>Watumiaji wa Mfumo</h2>
-  <p class="hint" id="uCount"></p>
+  <div class="row">
+   <select id="uFlt" onchange="renderUsers()"><option value="">Wote</option><option value="admin">Wasimamizi</option><option value="mwalimu">Walimu</option></select>
+   <input id="uQ" placeholder="🔍 Tafuta jina, email au shule..." oninput="renderUsers()" style="min-width:230px">
+   <span class="hint" id="uCount"></span>
+  </div>
   <div id="uList"></div>
  </div>
 </section>
 </main>
-<footer>Mfumo wa Matokeo ya Shule • Data huhifadhiwa kwenye kivinjari chako</footer>
+<footer>Mfumo wa Matokeo ya Shule • Data huhifadhiwa kwenye kivinjari chako • Pakua nakala (backup) mara kwa mara</footer>
 
 <dialog id="dlg">
  <h2>Mipangilio ya Shule</h2>
+ <p class="hint" id="sLockHint"></p>
  <div class="fg"><label>Jina la shule</label><input id="sSchool"></div>
  <div class="fg"><label>Anwani / S.L.P</label><input id="sAnwani" placeholder="mf. S.L.P 123, Dodoma"></div>
  <div class="fg"><label>Mwaka</label><input id="sMwaka"></div>
@@ -453,12 +527,28 @@ nav button:focus-visible,.btn:focus-visible,.tabs button:focus-visible{outline:2
 </dialog>
 </div>
 
+<dialog id="udlg">
+ <h2>Hariri Mtumiaji</h2>
+ <div class="fg"><label>Jina kamili</label><input id="eName"></div>
+ <div class="fg"><label>Email</label><input id="eEmail" type="email"></div>
+ <div class="fg"><label>Jina la Shule</label><input id="eSchool"></div>
+ <div class="fg"><label>Mkuu wa Shule</label><input id="eMkuu"></div>
+ <div class="fg"><label>Jukumu</label><select id="eRole"><option value="mwalimu">Mwalimu</option><option value="admin">Msimamizi</option></select></div>
+ <div class="fg"><label>Nenosiri jipya</label><input id="ePw" type="text" placeholder="Acha tupu kama halibadiliki" autocomplete="off"></div>
+ <div id="eLegacyWrap" class="hidden"><button class="btn gray sm" onclick="giveLegacy()">📥 Mpe data ya zamani ya kivinjari hiki</button><p class="hint">Data ya wanafunzi iliyokuwepo kabla ya mfumo kuwa na Mmiliki itakabidhiwa kwa mwalimu huyu.</p></div>
+ <div id="eMsg" class="msg"></div>
+ <div class="row" style="justify-content:flex-end"><button class="btn" onclick="saveUserEdit()">Hifadhi</button> <button class="btn gray" onclick="$('udlg').close()">Funga</button></div>
+</dialog>
+
 <script>
+const PRISTINE='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
 const CLASSES=['I','II','III','IV','V','VI','VII'];
 const SUBJ=[['kis','Kiswahili'],['hes','Hisabati'],['eng','English'],['say','Sayansi'],['jog','Jiografia na Mazingira'],['his','Historia ya Tanzania']];
 const GC={A:'#16a34a',B:'#2563eb',C:'#ca8a04',D:'#ea580c',E:'#dc2626'};
 const KEY='mfumo_shule_v2',OLD='mfumo_shule_v1';
-let S=load(),curCls='I',repTab='mwanafunzi',lastEx={};
+let DKEY=null; /* Mwalimu tu ndiye ana data ya wanafunzi; kila mmoja ana nafasi yake */
+function dkey(u){return (u&&u.role==='mwalimu')?KEY+'_u_'+u.id:null;}
+let S=load(KEY),curCls='I',repTab='mwanafunzi',lastEx={};
 
 function norm(d){
  d=d||{};d.students=d.students||[];d.exams=d.exams||[];
@@ -468,13 +558,19 @@ function norm(d){
  d.set.walimu=d.set.walimu||{};
  return d;
 }
-function load(){
- let d=null;
- try{d=JSON.parse(localStorage.getItem(KEY));}catch(e){}
- if(!d){try{d=JSON.parse(localStorage.getItem(OLD));}catch(e){}}
+function load(key){
+ key=key||KEY;let d=null;
+ try{d=JSON.parse(localStorage.getItem(key));}catch(e){}
+ if(!d&&key===KEY){try{d=JSON.parse(localStorage.getItem(OLD));}catch(e){}}
  return norm(d);
 }
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){alert('Hifadhi imeshindikana (nafasi ya kivinjari imejaa?). Pakua nakala ya data.');}}
+function applyIdentity(){ /* jina la shule na mkuu hutoka kwenye akaunti ya mtumiaji */
+ if(ME&&ME.school)S.set.school=ME.school;
+ if(ME&&ME.mkuu)S.set.mkuu=ME.mkuu;
+ save();
+}
+function teacherOf(c){return S.set.walimu[c]||((ME&&ME.role==='mwalimu')?ME.name:'');}
+function save(){if(!DKEY)return;try{localStorage.setItem(DKEY,JSON.stringify(S));}catch(e){alert('Hifadhi imeshindikana (nafasi ya kivinjari imejaa?). Pakua nakala ya data.');}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function f1(x){return x==null?'':x.toFixed(1);}
@@ -491,18 +587,22 @@ function applySet(){
  document.getElementById('hMark').classList.toggle('hidden',!!st.logo);
 }
 function openSet(){
+ if(!canWork())return;
  const st=S.set;
+ sSchool.disabled=sMkuu.disabled=true;sSchool.classList.add('lock');sMkuu.classList.add('lock');
+ sLockHint.textContent='Jina la shule na la Mkuu wa Shule huwekwa na Mmiliki/Msimamizi wakati wa kukusajili.';
  sSchool.value=st.school;sAnwani.value=st.anwani;sMwaka.value=st.mwaka;sMkuu.value=st.mkuu;
  bA.value=st.bounds.A;bB.value=st.bounds.B;bC.value=st.bounds.C;bD.value=st.bounds.D;
  const d=document.getElementById('dlg');if(!d.open)d.showModal();
 }
 function saveSet(){
+ if(!canWork())return;
  const A=+bA.value,B=+bB.value,C=+bC.value,D=+bD.value;
  if(!(A>B&&B>C&&C>D&&D>0&&A<=100)){alert('Mipaka ya madaraja si sahihi. Lazima A > B > C > D > 0.');return;}
- Object.assign(S.set,{school:sSchool.value.trim(),anwani:sAnwani.value.trim(),mwaka:sMwaka.value.trim(),mkuu:sMkuu.value.trim(),bounds:{A,B,C,D}});
- save();applySet();document.getElementById('dlg').close();refresh();toast('Mipangilio imehifadhiwa.');
+ Object.assign(S.set,{anwani:sAnwani.value.trim(),mwaka:sMwaka.value.trim(),bounds:{A,B,C,D}});
+ save();logAct('Amebadilisha mipangilio ya shule');applySet();document.getElementById('dlg').close();refresh();toast('Mipangilio imehifadhiwa.');
 }
-function setLogo(ev){
+function setLogo(ev){if(!canWork())return;
  const f=ev.target.files[0];if(!f)return;
  const r=new FileReader();
  r.onload=()=>{const im=new Image();im.onload=()=>{
@@ -515,14 +615,18 @@ function setLogo(ev){
 }
 
 function go(p){
- if(p==='watumiaji'&&!isAdmin())p='muhtasari';
- ['muhtasari','darasa','mitihani','ripoti','watumiaji'].forEach(x=>{
-  document.getElementById('sec-'+x).classList.toggle('hidden',x!==p);
-  document.getElementById('nb-'+x).classList.toggle('active',x===p);
- });
+ const W=canWork();
+ if(['darasa','mitihani','ripoti'].includes(p)&&!W)p='muhtasari';
+ if(p==='watumiaji'&&!canManage())p='muhtasari';
+ if(p==='shughuli'&&!isOwner())p='muhtasari';
+ const sec=(p==='muhtasari'&&!W)?'mgmt':p;
+ ['muhtasari','mgmt','darasa','mitihani','ripoti','watumiaji','shughuli'].forEach(x=>document.getElementById('sec-'+x).classList.toggle('hidden',x!==sec));
+ ['muhtasari','darasa','mitihani','ripoti','watumiaji','shughuli'].forEach(x=>document.getElementById('nb-'+x).classList.toggle('active',x===p));
  document.body.dataset.sec=p;
- if(p==='muhtasari')renderOverview();
+ if(sec==='mgmt')renderMgmt();
+ if(p==='muhtasari'&&W)renderOverview();
  if(p==='watumiaji')renderUsers();
+ if(p==='shughuli')renderLog();
  if(p==='darasa')renderClass();
  if(p==='mitihani'){fillClassSelect('exCls',curCls);renderExamPicker();}
  if(p==='ripoti'){fillClassSelect('rpCls',curCls);renderRepPicker();}
@@ -538,7 +642,7 @@ function refresh(){
 function studentsOf(c){return S.students.filter(s=>s.cls===c).sort((a,b)=>a.name.localeCompare(b.name));}
 function renderClass(){
  clsTabs.innerHTML=CLASSES.map(c=>`<button class="${c===curCls?'active':''}" onclick="curCls='${c}';renderClass()">Darasa la ${c} (${studentsOf(c).length})</button>`).join('');
- tName.value=S.set.walimu[curCls]||'';
+ tName.value=teacherOf(curCls);
  renderList();
 }
 function renderList(){
@@ -554,14 +658,14 @@ function renderList(){
   <button class="btn red sm" onclick="delStudent('${x.s.id}')">Futa</button></td></tr>`).join('')+`</table>`
   :`<p class="hint">Hakuna mwanafunzi aliyesajiliwa Darasa la ${curCls} bado.</p>`;
 }
-function addStudent(){
+function addStudent(){if(!canWork())return;
  const n=stName.value.trim().replace(/\s+/g,' ');
  if(!n){alert('Tafadhali andika jina la mwanafunzi.');return;}
  if(S.students.some(s=>s.cls===curCls&&s.name.toLowerCase()===n.toLowerCase())&&!confirm('Jina hili tayari lipo kwenye darasa hili. Sajili tena?'))return;
- S.students.push({id:uid(),cls:curCls,name:n,sex:stSex.value,simu:stSimu.value.trim()});
+ S.students.push({id:uid(),cls:curCls,name:n,sex:stSex.value,simu:stSimu.value.trim()});logAct('Amesajili mwanafunzi '+n+' (Darasa la '+curCls+')');
  stName.value='';stSimu.value='';save();renderClass();stName.focus();
 }
-function addBulk(){
+function addBulk(){if(!canWork())return;
  const lines=bulk.value.split(/\n/).map(x=>x.trim()).filter(Boolean);
  if(!lines.length){alert('Bandika majina kwanza.');return;}
  let n=0;
@@ -573,30 +677,30 @@ function addBulk(){
   if(S.students.some(s=>s.cls===curCls&&s.name.toLowerCase()===name.toLowerCase()))return;
   S.students.push({id:uid(),cls:curCls,name,sex,simu:''});n++;
  });
- bulk.value='';save();renderClass();toast(`Wanafunzi ${n} wamesajiliwa Darasa la ${curCls}.`);
+ bulk.value='';save();renderClass();logAct(`Amesajili wanafunzi ${n} (Darasa la ${curCls})`);toast(`Wanafunzi ${n} wamesajiliwa Darasa la ${curCls}.`);
 }
-function editStudent(id){
+function editStudent(id){if(!canWork())return;
  const s=S.students.find(x=>x.id===id);
  const n=prompt('Jina la mwanafunzi:',s.name);if(n===null)return;
  if(n.trim())s.name=n.trim();
  const sx=prompt('Jinsia (ME au KE):',s.sex);
  if(sx&&['ME','KE'].includes(sx.trim().toUpperCase()))s.sex=sx.trim().toUpperCase();
  const sm=prompt('Simu ya mzazi:',s.simu||'');if(sm!==null)s.simu=sm.trim();
- save();renderList();
+ save();renderList();logAct('Amehariri taarifa za mwanafunzi '+s.name);
 }
-function delStudent(id){
+function delStudent(id){if(!canWork())return;
  const s=S.students.find(x=>x.id===id);
  if(!confirm('Futa '+s.name+'? Alama zake zote pia zitafutwa.'))return;
  S.students=S.students.filter(x=>x.id!==id);
  S.exams.forEach(e=>{delete e.marks[id];delete e.rem[id];});
- save();renderClass();
+ save();renderClass();logAct('Amefuta mwanafunzi '+s.name);
 }
-function promote(){
+function promote(){if(!canWork())return;
  const i=CLASSES.indexOf(curCls);
  if(i>=CLASSES.length-1){alert('Darasa la VII ni wahitimu. Pakua nakala ya data kisha futa wanafunzi mwenyewe inapohitajika.');return;}
  const L=studentsOf(curCls);if(!L.length){alert('Hakuna wanafunzi.');return;}
  if(!confirm(`Pandisha wanafunzi ${L.length} wa Darasa la ${curCls} kwenda Darasa la ${CLASSES[i+1]}?\nMitihani ya zamani itabaki Darasa la ${curCls}. Inashauriwa kupakua nakala kwanza.`))return;
- L.forEach(s=>s.cls=CLASSES[i+1]);save();renderClass();
+ L.forEach(s=>s.cls=CLASSES[i+1]);save();renderClass();logAct(`Amepandisha wanafunzi ${L.length} kutoka Darasa la ${curCls} kwenda ${CLASSES[i+1]}`);
 }
 
 /* ---------- HESABU ---------- */
@@ -638,17 +742,17 @@ function renderExamPicker(keep){
 function examLabel(e){return e.name+(e.muhula?' – '+e.muhula:'')+(e.mwaka?' ('+e.mwaka+')':'');}
 function fmtDate(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?m[3]+'/'+m[2]+'/'+m[1]:'';}
 function todayIso(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function newExam(){
+function newExam(){if(!canWork())return;
  const c=exCls.value;
  const e={id:uid(),cls:c,name:'Mtihani Mpya',muhula:'',mwaka:S.set.mwaka,tarehe:todayIso(),marks:{},rem:{}};
- S.exams.push(e);lastEx[c]=e.id;save();renderExamPicker(e.id);
+ S.exams.push(e);lastEx[c]=e.id;save();logAct('Ametengeneza mtihani mpya (Darasa la '+c+')');renderExamPicker(e.id);
  exName.focus();exName.select();
 }
 function fillExMeta(e){
  [exName,exMuhula,exMwaka,exTarehe].forEach(x=>x.disabled=!e);
  exName.value=e?e.name:'';exMuhula.value=e?(e.muhula||''):'';exMwaka.value=e?(e.mwaka||''):'';exTarehe.value=e?(e.tarehe||''):'';
 }
-function saveExMeta(){
+function saveExMeta(){if(!canWork())return;
  const e=curExam();if(!e)return;
  const n=exName.value.trim();
  if(!n){alert('Jina la mtihani haliwezi kuwa tupu.');exName.value=e.name;return;}
@@ -660,10 +764,10 @@ function renameExam(){
  const e=curExam();if(!e)return;
  const n=prompt('Jina jipya la mtihani:',e.name);if(n&&n.trim()){e.name=n.trim();save();renderExamPicker(e.id);}
 }
-function delExam(){
+function delExam(){if(!canWork())return;
  const e=curExam();if(!e)return;
  if(!confirm('Futa mtihani "'+e.name+'" pamoja na alama zake zote?'))return;
- S.exams=S.exams.filter(x=>x.id!==e.id);save();renderExamPicker();
+ S.exams=S.exams.filter(x=>x.id!==e.id);save();logAct('Amefuta mtihani '+e.name+' (Darasa la '+e.cls+')');renderExamPicker();
 }
 function renderMarks(){
  gkey.textContent=keyText();
@@ -687,14 +791,14 @@ function nav(ev,inp){
  ev.preventDefault();
  const n=marksBox.querySelector(`input[data-r="${t}"][data-c="${c}"]`);if(n)n.focus();
 }
-function setMark(inp){
+function setMark(inp){if(!canWork())return;
  const e=curExam();if(!e)return;
  let v=inp.value;
  if(v!==''){v=Math.max(0,Math.min(100,Math.round(Number(v)*10)/10));if(String(v)!==inp.value)inp.value=v;}
  const sid=inp.dataset.s,k=inp.dataset.k;
  e.marks[sid]=e.marks[sid]||{};
  if(v==='')delete e.marks[sid][k];else e.marks[sid][k]=v;
- save();updateLive();
+ save();updateLive();markLog(e);
 }
 function updateLive(){
  const e=curExam();if(!e)return;
@@ -735,7 +839,7 @@ function exportCsv(withMarks){
  a.download=`${withMarks?'matokeo':'template'}_darasa_${exCls.value}_${e.name.replace(/\W+/g,'_')}.csv`;a.click();
 }
 
-function importText(txt){
+function importText(txt){if(!canWork())return;
  const e=curExam();if(!e){alert('Chagua mtihani kwanza.');return;}
  const studs=studentsOf(exCls.value);
  if(!studs.length){alert('Hakuna wanafunzi kwenye darasa hili. Wasajili kwanza.');return;}
@@ -761,7 +865,7 @@ function importText(txt){
   });
   found.add(s.id);
  });
- save();renderMarks();
+ save();renderMarks();logAct('Amepakia alama (wanafunzi '+found.size+', alama '+okc+') – '+e.name+', Darasa la '+exCls.value);
  if(!found.size&&!okc){alert('Hakuna alama zilizopatikana kwenye faili. Tumia template iliyopakuliwa kwenye ukurasa huu, na hakikisha majina yanalingana na yaliyosajiliwa.'+(bad.length?'\n\nMajina yasiyopatikana:\n'+bad.slice(0,10).join('\n'):''));return;}
  let m='✔ Template imepakiwa.\nWanafunzi waliopatikana: '+found.size+'\nAlama zilizopakiwa: '+okc;
  if(bad.length)m+='\n\n⚠ Majina '+bad.length+' hayapo kwenye Darasa la '+exCls.value+' (hayakupakiwa):\n'+bad.slice(0,10).join('\n');
@@ -791,9 +895,9 @@ function renderRepPicker(){
 function doPrint(){
  let st=document.getElementById('pgst');if(!st){st=document.createElement('style');st.id='pgst';document.head.appendChild(st);}
  st.textContent='@page{size:A4 '+(repTab==='mwanafunzi'?'portrait':'landscape')+';margin:10mm}';
- window.print();
+ logAct('Amechapisha ripoti');window.print();
 }
-function saveRem(sid,key,txt){
+function saveRem(sid,key,txt){if(!canWork())return;
  const e=S.exams.find(x=>x.id===rpEx.value);if(!e)return;
  e.rem[sid]=e.rem[sid]||{};e.rem[sid][key]=txt.trim();save();
 }
@@ -817,7 +921,7 @@ function renderReports(){
 function repStudents(e,c,st,studs){
  const pick=rpSt.value,list=examsOf(c),idx=list.findIndex(x=>x.id===e.id),prev=idx>0?list[idx-1]:null;
  const pst=prev?stats(prev,studs):null;
- const teacher=S.set.walimu[c]||'';
+ const teacher=teacherOf(c);
  return st.rows.filter(r=>pick==='all'||r.s.id===pick).map(r=>{
   const rem=e.rem[r.s.id]||{};
   let prog='';
@@ -851,7 +955,7 @@ function repClass(e,c,st){
  `<tr><th colspan="3">Wastani wa Somo</th>${SUBJ.map(([k])=>`<th>${f1(st.sub[k].avg)||'-'}</th>`).join('')}<th></th><th>${f1(st.cavg)||'-'}</th><th></th></tr></table>
  <p style="font-size:14px"><b>Idadi:</b> ${st.rows.length} &nbsp; <b>Wenye matokeo:</b> ${st.n} &nbsp; <b>Ufaulu (A–C):</b> ${st.pass==null?'-':st.pass.toFixed(1)+'%'} &nbsp; <b>Madaraja:</b> ${['A','B','C','D','E'].map(g=>g+' = '+st.dist[g]).join(', ')}</p>
  <div class="key">${keyText()}</div>
- <div class="sign"><div>Mwalimu wa Darasa${S.set.walimu[c]?': '+esc(S.set.walimu[c]):''}</div><div>Mkuu wa Shule${S.set.mkuu?': '+esc(S.set.mkuu):''}</div></div></div>`;
+ <div class="sign"><div>Mwalimu wa Darasa${teacherOf(c)?': '+esc(teacherOf(c)):''}</div><div>Mkuu wa Shule${S.set.mkuu?': '+esc(S.set.mkuu):''}</div></div></div>`;
 }
 function repSubjects(e,c,st){
  const ranked=SUBJ.map(([k,n])=>({k,n,s:st.sub[k]})).filter(x=>x.s.n).sort((a,b)=>b.s.avg-a.s.avg);
@@ -877,18 +981,18 @@ function repSubjects(e,c,st){
 }
 
 /* ---------- BACKUP ---------- */
-function exportData(){
+function exportData(){if(!canWork())return;
  const b=new Blob([JSON.stringify(S)],{type:'application/json'});
  const a=document.createElement('a');a.href=URL.createObjectURL(b);
- a.download='nakala_mfumo_wa_shule_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Nakala imepakuliwa.');
+ a.download='nakala_mfumo_wa_shule_'+new Date().toISOString().slice(0,10)+'.json';a.click();logAct('Amepakua nakala ya data (backup)');toast('Nakala imepakuliwa.');
 }
-function importData(ev){
+function importData(ev){if(!canWork())return;
  const f=ev.target.files[0];if(!f)return;
  const r=new FileReader();
  r.onload=()=>{try{
   const d=JSON.parse(r.result);if(!d.students||!d.exams)throw 0;
   if(!confirm('Data ya sasa itabadilishwa na nakala hii. Endelea?'))return;
-  S=norm(d);save();applySet();renderClass();toast('Nakala imerudishwa.');
+  S=norm(d);applyIdentity();logAct('Amerudisha nakala ya data (backup)');applySet();renderClass();toast('Nakala imerudishwa.');
  }catch(e){alert('Faili si sahihi.');}};
  r.readAsText(f);ev.target.value='';
 }
@@ -960,14 +1064,32 @@ function toggleTheme(){
    ========================================================= */
 const UKEY = 'mfumo_shule_users_v1';
 const SKEY = 'mfumo_shule_session_v1';
-const ROLES = { admin: 'Msimamizi', mwalimu: 'Mwalimu' };
+const ROLES = { mmiliki: 'Mmiliki', admin: 'Msimamizi', mwalimu: 'Mwalimu' };
+const PRESET=(()=>{try{const p=JSON.parse(document.getElementById('preset').textContent.trim());return p&&Array.isArray(p.users)&&p.users.length?p:null;}catch(e){return null;}})();
+const LOGIN_ONLY=!!PRESET; /* toleo la GitHub: kuingia tu */
+const HOSTED=/\.github\.io$/i.test(location.hostname);
 let U = loadUsers();
 let ME = null;
-let fails = 0, lockUntil = 0;
+let fails = 0, lockUntil = +(localStorage.getItem('mfumo_lock')||0);
 
-function loadUsers() { try { return JSON.parse(localStorage.getItem(UKEY)) || []; } catch (e) { return []; } }
+function loadUsers() {
+  let loc = []; try { loc = JSON.parse(localStorage.getItem(UKEY)) || []; } catch (e) {}
+  if (!PRESET) {
+    /* Uhamishaji: kama hakuna Mmiliki, Msimamizi wa kwanza kusajiliwa anakuwa Mmiliki */
+    if (loc.length && !loc.some(u => u.role === 'mmiliki')) {
+      const f = loc.filter(u => u.role === 'admin').sort((a, b) => (a.created || 0) - (b.created || 0))[0];
+      if (f) { f.role = 'mmiliki'; f.upd = Date.now(); try { localStorage.setItem(UKEY, JSON.stringify(loc)); } catch (e) {} }
+    }
+    return loc;
+  }
+  /* Toleo la kuingia tu: watumiaji ni wale waliomo kwenye faili; mabadiliko mapya ya nenosiri (upd kubwa zaidi) yanashinda */
+  return PRESET.users.map(p => { const l = loc.find(x => x.id === p.id); return l && (l.upd || 0) > (p.upd || 0) ? l : p; });
+}
 function saveUsers() { try { localStorage.setItem(UKEY, JSON.stringify(U)); } catch (e) { alert('Imeshindikana kuhifadhi watumiaji.'); } }
+function isOwner() { return !!ME && ME.role === 'mmiliki'; }
 function isAdmin() { return !!ME && ME.role === 'admin'; }
+function canWork() { return !!ME && ME.role === 'mwalimu'; } /* wanafunzi, alama, ripoti: Mwalimu tu */
+function canManage() { return (isOwner() || isAdmin()) && !LOGIN_ONLY; }
 const $ = id => document.getElementById(id);
 const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 
@@ -991,7 +1113,7 @@ async function hashPw(pw, salt) {
   return 'f' + (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
 }
 function checkPw(pw, pw2) {
-  if (pw.length < 6) return 'Nenosiri lazima liwe na herufi 6 au zaidi.';
+  if (pw.length < 8) return 'Nenosiri lazima liwe na herufi 8 au zaidi.';
   if (pw2 !== undefined && pw !== pw2) return 'Manenosiri hayafanani.';
   return '';
 }
@@ -1001,42 +1123,50 @@ function setMsg(id, text, ok) {
 }
 
 /* ---------- Mtiririko wa skrini ---------- */
+function authMode() { return U.length ? 'login' : (HOSTED ? 'closed' : 'setup'); }
 function authInit() {
   const sid = sessionStorage.getItem(SKEY) || localStorage.getItem(SKEY);
-  const u = sid && U.find(x => x.id === sid);
+  const u = sid && U.find(x => x.id === sid && !x.disabled);
   if (u) { ME = u; enterApp(); return; }
-  showAuth(U.length ? 'login' : 'setup');
+  showAuth(authMode());
 }
 function showAuth(mode) {
   $('appView').classList.add('hidden');
   $('authView').classList.remove('hidden');
-  ['login', 'setup'].forEach(m => $('au-' + m).classList.toggle('hidden', m !== mode));
+  ['login', 'setup', 'closed'].forEach(m => $('au-' + m).classList.toggle('hidden', m !== mode));
   document.body.dataset.sec = 'auth';
   setMsg('loginMsg', ''); setMsg('setupMsg', '');
   $('authTitle').textContent = (S.set && S.set.school) || 'Mfumo wa Matokeo ya Shule';
-  const f = $(mode === 'login' ? 'lEmail' : 'sName'); if (f) f.focus();
+  const fid = { login: 'lEmail', setup: 'sName' }[mode]; if (fid) $(fid).focus();
 }
 function enterApp() {
+  DKEY = dkey(ME); S = canWork() ? load(DKEY) : norm(null); lastEx = {}; curCls = 'I'; repTab = 'mwanafunzi';
+  applyIdentity();
   $('authView').classList.add('hidden');
   $('appView').classList.remove('hidden');
   $('meName').textContent = ME.name || ME.email;
   $('meRole').textContent = ROLES[ME.role] || ME.role;
-  document.querySelectorAll('.adminOnly').forEach(el => el.classList.toggle('hidden', !isAdmin()));
+  const W = canWork();
+  ['darasa', 'mitihani', 'ripoti'].forEach(x => $('nb-' + x).classList.toggle('hidden', !W));
+  $('setBtn').classList.toggle('hidden', !W);
+  $('nb-watumiaji').classList.toggle('hidden', !canManage());
+  $('nb-shughuli').classList.toggle('hidden', !isOwner());
   startApp();
 }
 
 /* ---------- Usajili wa Msimamizi wa kwanza ---------- */
 async function doSetup(ev) {
   ev.preventDefault();
+  if (LOGIN_ONLY || U.length) return;
   const name = $('sName').value.trim(), email = $('sEmail').value.trim().toLowerCase();
   const pw = $('sPw').value, pw2 = $('sPw2').value;
   if (!name) return setMsg('setupMsg', 'Andika jina lako.');
   if (!validEmail(email)) return setMsg('setupMsg', 'Email si sahihi.');
   const e = checkPw(pw, pw2); if (e) return setMsg('setupMsg', e);
   const salt = randSalt();
-  const u = { id: uid(), name, email, role: 'admin', salt, hash: await hashPw(pw, salt), created: Date.now() };
+  const u = { id: uid(), name, email, role: 'mmiliki', salt, hash: await hashPw(pw, salt), created: Date.now(), upd: Date.now() };
   U.push(u); saveUsers();
-  ME = u; sessionStorage.setItem(SKEY, u.id);
+  ME = u; sessionStorage.setItem(SKEY, u.id); logAct('Mmiliki wa mfumo amesajiliwa');
   $('setupForm').reset(); enterApp();
 }
 
@@ -1049,67 +1179,241 @@ async function doLogin(ev) {
   const u = U.find(x => x.email === email);
   const ok = u && (await hashPw(pw, u.salt)) === u.hash;
   if (!ok) {
-    if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; }
+    if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; try { localStorage.setItem('mfumo_lock', lockUntil); } catch (e) {} }
+    logAct('Jaribio la kuingia limeshindwa (' + email + ')', { id: u ? u.id : '', name: email, role: u ? u.role : '' });
     return setMsg('loginMsg', 'Email au nenosiri si sahihi.');
   }
-  fails = 0; ME = u;
+  if (u.disabled) { logAct('Jaribio la kuingia kwa akaunti iliyozuiwa (' + email + ')', { id: u.id, name: u.name, role: u.role }); return setMsg('loginMsg', 'Akaunti hii imezuiwa. Wasiliana na Mmiliki au Msimamizi.'); }
+  fails = 0; ME = u; u.last = Date.now(); saveUsers(); logAct('Ameingia kwenye mfumo');
   sessionStorage.removeItem(SKEY); localStorage.removeItem(SKEY);
   (($('lRemember').checked) ? localStorage : sessionStorage).setItem(SKEY, u.id);
   $('loginForm').reset(); enterApp();
 }
 function logout() {
   sessionStorage.removeItem(SKEY); localStorage.removeItem(SKEY);
-  ME = null; showAuth(U.length ? 'login' : 'setup');
+  logAct('Ametoka kwenye mfumo'); ME = null; DKEY = null; S = load(KEY); showAuth(authMode());
 }
 function togglePw(id, btn) {
   const i = $(id); const show = i.type === 'password';
   i.type = show ? 'text' : 'password'; btn.textContent = show ? '🙈' : '👁';
 }
 
-/* ---------- Menyu ya WATUMIAJI (Msimamizi tu) ---------- */
-function renderUsers() {
-  if (!isAdmin()) return;
-  $('uList').innerHTML = `<table><tr><th>#</th><th>Jina</th><th>Email</th><th>Jukumu</th><th>Vitendo</th></tr>` +
-    U.map((u, i) => `<tr><td>${i + 1}</td><td class="l">${esc(u.name)}${u.id === ME.id ? ' <span class="badge">wewe</span>' : ''}</td>
-    <td class="l">${esc(u.email)}</td><td>${ROLES[u.role] || u.role}</td>
-    <td><button class="btn blue sm" onclick="resetPw('${u.id}')">Badili Nenosiri</button>
-    ${u.id === ME.id ? '' : `<button class="btn red sm" onclick="delUser('${u.id}')">Futa</button>`}</td></tr>`).join('') + `</table>`;
-  $('uCount').textContent = 'Jumla ya watumiaji: ' + U.length;
+/* ---------- SHUGHULI (kumbukumbu) ---------- */
+const LKEY = 'mfumo_shule_log_v1';
+function getLog() { try { return JSON.parse(localStorage.getItem(LKEY)) || []; } catch (e) { return []; } }
+function logAct(a, who) {
+  try {
+    const L = getLog(), u = who || ME;
+    L.push({ t: Date.now(), u: u ? u.id : '', n: u ? u.name : '-', r: u ? u.role : '', a });
+    if (L.length > 1000) L.splice(0, L.length - 1000);
+    localStorage.setItem(LKEY, JSON.stringify(L));
+  } catch (e) {}
 }
+const _mk = {};
+function markLog(e) { const n = Date.now(); if (n - (_mk[e.id] || 0) > 300000) { _mk[e.id] = n; logAct('Anaingiza/anahariri alama: ' + e.name + ' (Darasa la ' + e.cls + ')'); } }
+function fmtDT(t) { if (!t) return '-'; const d = new Date(t), p = n => String(n).padStart(2, '0'); return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+function logRows(L) {
+  return `<table><tr><th>Tarehe</th><th>Mtumiaji</th><th>Jukumu</th><th>Shughuli</th></tr>` +
+    L.map(x => `<tr><td>${fmtDT(x.t)}</td><td class="l">${esc(x.n)}</td><td>${ROLES[x.r] || '-'}</td><td class="l">${esc(x.a)}</td></tr>`).join('') + `</table>`;
+}
+function renderMgmt() {
+  const cnt = r => U.filter(u => u.role === r).length;
+  const schools = new Set(U.filter(u => u.role === 'mwalimu' && u.school).map(u => u.school.toLowerCase())).size;
+  const st = [[cnt('mwalimu'), 'Walimu'], [schools, 'Shule']];
+  if (isOwner()) st.push([cnt('admin'), 'Wasimamizi'], [U.filter(u => u.disabled).length, 'Akaunti zilizozuiwa'], [getLog().length, 'Shughuli zilizorekodiwa']);
+  $('mgTitle').textContent = isOwner() ? 'Usimamizi wa Mfumo (Mmiliki)' : 'Usimamizi wa Walimu (Msimamizi)';
+  $('mgStats').innerHTML = st.map(x => `<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  $('mgLogBtn').classList.toggle('hidden', !isOwner());
+  $('mgLogCard').classList.toggle('hidden', !isOwner());
+  if (isOwner()) { const L = getLog().slice(-8).reverse(); $('mgLog').innerHTML = L.length ? logRows(L) : '<p class="hint">Bado hakuna shughuli zilizorekodiwa.</p>'; }
+}
+function renderLog() {
+  if (!isOwner()) return;
+  const sel = $('lgUser'), cur = sel.value;
+  sel.innerHTML = '<option value="">Watumiaji wote</option>' + U.map(u => `<option value="${u.id}">${esc(u.name)} (${ROLES[u.role] || u.role})</option>`).join('');
+  sel.value = cur;
+  const q = $('lgQ').value.trim().toLowerCase();
+  const L = getLog().filter(x => (!sel.value || x.u === sel.value) && (!q || (x.n + ' ' + x.a).toLowerCase().includes(q))).reverse();
+  $('lgList').innerHTML = L.length ? logRows(L.slice(0, 300)) + (L.length > 300 ? `<p class="hint">Inaonyesha shughuli 300 za hivi karibuni kati ya ${L.length}. Pakua CSV kupata zote.</p>` : '') : '<p class="hint">Hakuna shughuli zilizopatikana.</p>';
+}
+function exportLog() {
+  if (!isOwner()) return;
+  const q = x => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"';
+  const out = [['Tarehe', 'Mtumiaji', 'Jukumu', 'Shughuli'].map(q).join(',')].concat(getLog().slice().reverse().map(x => [fmtDT(x.t), x.n, ROLES[x.r] || '', x.a].map(q).join(',')));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + out.join('\n')], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'shughuli_mfumo_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+}
+function clearLog() {
+  if (!isOwner() || !confirm('Futa kumbukumbu yote ya shughuli kwenye kivinjari hiki?')) return;
+  try { localStorage.removeItem(LKEY); } catch (e) {}
+  logAct('Mmiliki amefuta kumbukumbu ya shughuli'); renderLog(); toast('Kumbukumbu imefutwa.');
+}
+
+/* ---------- Menyu ya WATUMIAJI (Mmiliki na Msimamizi) ---------- */
+function visibleUsers() { return isOwner() ? U : U.filter(u => u.role === 'mwalimu'); }
+/* Mmiliki anahariri Wasimamizi (na akaunti yake); Msimamizi anahariri Walimu */
+function canEditUser(u) { return canManage() && ((isOwner() && (u.role === 'admin' || u.id === ME.id)) || (isAdmin() && u.role === 'mwalimu')); }
+function canToggleUser(u) { return canManage() && u.id !== ME.id && u.role !== 'mmiliki' && (isOwner() || (isAdmin() && u.role === 'mwalimu')); }
+function fillRoleSelect() {
+  const r = $('uRole');
+  /* Mmiliki husajili Wasimamizi tu; Msimamizi husajili Walimu tu */
+  r.innerHTML = isOwner() ? '<option value="admin">Msimamizi</option>' : '<option value="mwalimu">Mwalimu</option>';
+  onRoleChange();
+}
+function onRoleChange() {
+  const t = $('uRole').value === 'mwalimu';
+  $('uSchool').required = $('uMkuu').required = t;
+  $('uSchool').placeholder = t ? 'Jina la Shule yake' : 'Jina la Shule (si lazima)';
+  $('uMkuu').placeholder = t ? 'Jina la Mkuu wa Shule' : 'Mkuu wa Shule (si lazima)';
+}
+function renderUsers() {
+  if (!canManage()) return;
+  $('uFlt').classList.toggle('hidden', !isOwner());
+  const f = isOwner() ? $('uFlt').value : '', q = $('uQ').value.trim().toLowerCase();
+  const L = visibleUsers().filter(u => (!f || u.role === f) && (!q || (u.name + ' ' + u.email + ' ' + (u.school || '')).toLowerCase().includes(q)));
+  const by = u => { const x = U.find(y => y.id === u.by); return x ? esc(x.name) : '-'; };
+  $('uList').innerHTML = L.length ? `<table><tr><th>#</th><th>Jina</th><th>Email</th><th>Shule</th><th>Mkuu wa Shule</th><th>Jukumu</th><th>Alisajiliwa na</th><th>Mwisho kuingia</th><th>Hali</th><th>Vitendo</th></tr>` +
+    L.map((u, i) => `<tr><td>${i + 1}</td><td class="l">${esc(u.name)}${u.id === ME.id ? ' <span class="badge">wewe</span>' : ''}</td>
+    <td class="l">${esc(u.email)}</td><td class="l">${esc(u.school || '-')}</td><td class="l">${esc(u.mkuu || '-')}</td><td>${ROLES[u.role] || u.role}</td><td class="l">${u.role === 'mmiliki' ? '-' : by(u)}</td><td>${fmtDT(u.last)}</td>
+    <td>${u.disabled ? '<span class="warn">⛔ Imezuiwa</span>' : '<span style="color:var(--ok)">● Hai</span>'}</td>
+    <td>${canEditUser(u) ? `<button class="btn blue sm" onclick="editUser('${u.id}')">Hariri</button> ` : ''}${canToggleUser(u) ? `<button class="btn gray sm" onclick="toggleUser('${u.id}')">${u.disabled ? 'Washa' : 'Zuia'}</button> ` : ''}${isOwner() && u.id !== ME.id && u.role !== 'mmiliki' ? `<button class="btn red sm" onclick="delUser('${u.id}')">Futa</button>` : ''}</td></tr>`).join('') + `</table>`
+    : '<p class="hint">Hakuna mtumiaji aliyepatikana.</p>';
+  $('uCount').textContent = 'Jumla: ' + L.length;
+  $('pubCard').classList.toggle('hidden', !isOwner());
+  $('accCard').classList.toggle('hidden', !isOwner());
+  fillRoleSelect();
+}
+function genPw() {
+  const c = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789', a = new Uint8Array(10);
+  (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(a) : a.forEach((_, i) => a[i] = Math.floor(Math.random() * 256));
+  $('uPw').value = Array.from(a, b => c[b % c.length]).join('');
+}
+let lastCred = '';
 async function addUser(ev) {
   ev.preventDefault();
+  if (!canManage()) return;
   const name = $('uName').value.trim(), email = $('uEmail').value.trim().toLowerCase();
-  const pw = $('uPw').value, role = $('uRole').value;
+  const school = $('uSchool').value.trim(), mkuu = $('uMkuu').value.trim();
+  const pw = $('uPw').value;
+  const role = isOwner() ? 'admin' : 'mwalimu'; /* Mmiliki: Msimamizi tu. Msimamizi: Mwalimu tu. */
+  $('uCredWrap').classList.add('hidden');
   if (!name) return setMsg('uMsg', 'Andika jina la mtumiaji.');
   if (!validEmail(email)) return setMsg('uMsg', 'Email si sahihi.');
+  if (role === 'mwalimu' && !school) return setMsg('uMsg', 'Andika jina la shule ya mwalimu huyu.');
+  if (role === 'mwalimu' && !mkuu) return setMsg('uMsg', 'Andika jina la Mkuu wa Shule.');
   if (U.some(x => x.email === email)) return setMsg('uMsg', 'Email hii tayari imesajiliwa.');
   const e = checkPw(pw); if (e) return setMsg('uMsg', e);
   const salt = randSalt();
-  U.push({ id: uid(), name, email, role, salt, hash: await hashPw(pw, salt), created: Date.now() });
-  saveUsers(); $('userForm').reset();
-  setMsg('uMsg', 'Mtumiaji ' + name + ' amesajiliwa. Mpe email na nenosiri lake.', true);
+  U.push({ id: uid(), name, email, role, school, mkuu, by: ME.id, salt, hash: await hashPw(pw, salt), created: Date.now(), upd: Date.now() });
+  saveUsers(); $('userForm').reset(); fillRoleSelect();
+  logAct('Amesajili ' + ROLES[role] + ' ' + name + (school ? ' (' + school + ')' : ''));
+  lastCred = 'Mfumo wa Matokeo ya Shule\nJukumu: ' + ROLES[role] + '\nJina: ' + name + (school ? '\nShule: ' + school : '') + (mkuu ? '\nMkuu wa Shule: ' + mkuu : '') + '\nEmail: ' + email + '\nNenosiri: ' + pw;
+  $('uCred').textContent = lastCred; $('uCredWrap').classList.remove('hidden');
+  setMsg('uMsg', 'Mtumiaji ' + name + ' amesajiliwa. Nakili maelezo hapa chini umpe (nenosiri halitaonekana tena).', true);
   renderUsers();
 }
-async function resetPw(id) {
-  const u = U.find(x => x.id === id); if (!u) return;
-  const pw = prompt('Nenosiri jipya la ' + u.email + ' (angalau herufi 6):');
-  if (pw === null) return;
-  const e = checkPw(pw); if (e) { alert(e); return; }
-  u.salt = randSalt(); u.hash = await hashPw(pw, u.salt); saveUsers();
-  toast('Nenosiri limebadilishwa.');
+function copyCreds() {
+  const done = () => toast('Maelezo yamenakiliwa.');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastCred).then(done, () => prompt('Nakili maelezo:', lastCred));
+  else prompt('Nakili maelezo:', lastCred);
+}
+let editId = null;
+function legacyHas() { try { const d = JSON.parse(localStorage.getItem(KEY)); return !!(d && d.students && d.students.length); } catch (e) { return false; } }
+function editUser(id) {
+  const u = U.find(x => x.id === id); if (!u || !canEditUser(u)) return;
+  editId = id;
+  $('eName').value = u.name || ''; $('eEmail').value = u.email || ''; $('eSchool').value = u.school || ''; $('eMkuu').value = u.mkuu || '';
+  $('eRole').innerHTML = `<option>${ROLES[u.role] || u.role}</option>`; $('eRole').disabled = true; /* jukumu halibadilishwi */
+  $('eLegacyWrap').classList.toggle('hidden', !(u.role === 'mwalimu' && legacyHas()));
+  $('ePw').value = ''; setMsg('eMsg', '');
+  $('udlg').showModal();
+}
+function giveLegacy() {
+  const u = U.find(x => x.id === editId); if (!u || u.role !== 'mwalimu' || !canEditUser(u)) return;
+  const k = dkey(u); let cur = null; try { cur = JSON.parse(localStorage.getItem(k)); } catch (e) {}
+  if (cur && cur.students && cur.students.length && !confirm('Mwalimu huyu tayari ana wanafunzi. Data ya zamani itabadilisha ya sasa. Endelea?')) return;
+  try { localStorage.setItem(k, localStorage.getItem(KEY)); } catch (e) { alert('Imeshindikana kuhamisha data.'); return; }
+  logAct('Amemkabidhi ' + u.name + ' data ya zamani ya kivinjari hiki');
+  $('eLegacyWrap').classList.add('hidden'); toast('Data imekabidhiwa kwa ' + u.name + '.');
+}
+async function saveUserEdit() {
+  const u = U.find(x => x.id === editId); if (!u || !canEditUser(u)) return;
+  const name = $('eName').value.trim(), email = $('eEmail').value.trim().toLowerCase();
+  const school = $('eSchool').value.trim(), mkuu = $('eMkuu').value.trim(), pw = $('ePw').value;
+  if (!name) return setMsg('eMsg', 'Andika jina.');
+  if (!validEmail(email)) return setMsg('eMsg', 'Email si sahihi.');
+  if (u.role === 'mwalimu' && (!school || !mkuu)) return setMsg('eMsg', 'Mwalimu lazima awe na jina la shule na la Mkuu wa Shule.');
+  if (U.some(x => x.id !== u.id && x.email === email)) return setMsg('eMsg', 'Email hii inatumiwa na mtumiaji mwingine.');
+  if (pw) { const e = checkPw(pw); if (e) return setMsg('eMsg', e); }
+  Object.assign(u, { name, email, school, mkuu, upd: Date.now() });
+  if (pw) { u.salt = randSalt(); u.hash = await hashPw(pw, u.salt); }
+  saveUsers(); logAct('Amehariri akaunti ya ' + name + (pw ? ' (nenosiri limebadilishwa)' : ''));
+  if (u.id === ME.id) $('meName').textContent = ME.name;
+  $('udlg').close(); renderUsers(); toast('Mabadiliko yamehifadhiwa.');
+}
+function toggleUser(id) {
+  const u = U.find(x => x.id === id); if (!u || !canToggleUser(u)) return;
+  const off = !u.disabled;
+  if (!confirm((off ? 'Zuia' : 'Washa') + ' akaunti ya ' + u.name + '?' + (off ? '\nHataweza kuingia hadi uiwashe tena. Data yake haifutwi.' : ''))) return;
+  u.disabled = off; u.upd = Date.now(); saveUsers();
+  logAct((off ? 'Amezuia' : 'Amewasha') + ' akaunti ya ' + ROLES[u.role] + ' ' + u.name);
+  renderUsers(); toast(off ? 'Akaunti imezuiwa.' : 'Akaunti imewashwa.');
 }
 function delUser(id) {
-  const u = U.find(x => x.id === id); if (!u || u.id === ME.id) return;
-  if (u.role === 'admin' && U.filter(x => x.role === 'admin').length < 2) { alert('Haiwezekani kufuta Msimamizi wa mwisho.'); return; }
-  if (!confirm('Futa mtumiaji ' + u.email + '?')) return;
+  const u = U.find(x => x.id === id); if (!isOwner() || !u || u.id === ME.id || u.role === 'mmiliki') return;
+  const kids = u.role === 'admin' ? U.filter(x => x.by === u.id).length : 0;
+  if (!confirm('Futa ' + (ROLES[u.role] || 'mtumiaji') + ' ' + u.name + ' (' + u.email + ')?' + (u.role === 'mwalimu' ? '\nData yake (wanafunzi, mitihani) iliyo kwenye kivinjari hiki pia itafutwa.' : '') + (kids ? '\nWalimu ' + kids + ' waliosajiliwa naye wataendelea kuwepo.' : ''))) return;
+  if (u.role === 'mwalimu') { try { localStorage.removeItem(dkey(u)); } catch (e) {} }
+  logAct('Amefuta ' + (ROLES[u.role] || 'mtumiaji') + ' ' + u.name + ' (' + u.email + ')');
   U = U.filter(x => x.id !== id); saveUsers(); renderUsers();
+}
+
+/* ---------- Nakala ya akaunti (Mmiliki tu) ---------- */
+function exportAccounts() {
+  if (!isOwner()) return;
+  const b = new Blob([JSON.stringify({ v: 1, saved: Date.now(), users: U, log: getLog() })], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = 'nakala_akaunti_' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+  logAct('Amepakua nakala ya akaunti'); toast('Nakala ya akaunti imepakuliwa.');
+}
+function importAccounts(ev) {
+  const f = ev.target.files[0]; if (!f || !isOwner()) return;
+  const r = new FileReader();
+  r.onload = () => { try {
+    const d = JSON.parse(r.result);
+    const ok = d && Array.isArray(d.users) && d.users.length && d.users.every(u => u.id && u.email && u.role && u.salt && u.hash) && d.users.some(u => u.role === 'mmiliki');
+    if (!ok) throw 0;
+    if (!confirm('Akaunti za sasa (' + U.length + ') zitabadilishwa na zilizo kwenye nakala (' + d.users.length + '). Endelea?')) return;
+    U = d.users; saveUsers();
+    if (Array.isArray(d.log)) { try { localStorage.setItem(LKEY, JSON.stringify(d.log.slice(-1000))); } catch (e) {} }
+    logAct('Amerudisha nakala ya akaunti');
+    const me = U.find(x => x.id === ME.id);
+    if (!me) { alert('Akaunti yako haimo kwenye nakala hii. Tafadhali ingia tena.'); logout(); return; }
+    ME = me; renderUsers(); toast('Nakala ya akaunti imerudishwa.');
+  } catch (e) { alert('Faili si nakala sahihi ya akaunti.'); } };
+  r.readAsText(f); ev.target.value = '';
+}
+
+/* ---------- Toleo la GitHub: Kuingia Tu (Mmiliki tu) ---------- */
+function buildPublish() {
+  if (!isOwner() || !canManage()) return;
+  const list = U.filter(u => u.role === 'mwalimu' && !u.disabled);
+  if (!list.length) { alert('Sajili angalau mwalimu mmoja kwanza.'); return; }
+  const payload = { v: 1, built: Date.now(), users: list.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role, school: u.school || '', mkuu: u.mkuu || '', salt: u.salt, hash: u.hash, created: u.created || 0, upd: u.upd || 0 })) };
+  const json = JSON.stringify(payload).replace(/</g, '\\u003c');
+  let html = PRISTINE.replace(/(<script id="preset" type="application\/json">)[\s\S]*?(<\/script>)/, (m, a, b) => a + json + b);
+  html = html.replace(/(<html[^>]*?)\sdata-theme="[^"]*"/, '$1');
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+  logAct('Amepakua toleo la Kuingia Tu (walimu ' + list.length + ')');
+  toast('Toleo la Kuingia Tu limepakuliwa (walimu ' + list.length + '). Lipakie GitHub kwa jina index.html.');
 }
 async function changeMyPw() {
   const old = prompt('Nenosiri la sasa:'); if (old === null) return;
   if ((await hashPw(old, ME.salt)) !== ME.hash) { alert('Nenosiri la sasa si sahihi.'); return; }
-  const pw = prompt('Nenosiri jipya (angalau herufi 6):'); if (pw === null) return;
+  const pw = prompt('Nenosiri jipya (angalau herufi 8):'); if (pw === null) return;
   const e = checkPw(pw); if (e) { alert(e); return; }
-  ME.salt = randSalt(); ME.hash = await hashPw(pw, ME.salt); saveUsers();
+  ME.salt = randSalt(); ME.hash = await hashPw(pw, ME.salt); ME.upd = Date.now(); saveUsers(); logAct('Amebadilisha nenosiri lake');
   toast('Nenosiri lako limebadilishwa.');
 }
 
